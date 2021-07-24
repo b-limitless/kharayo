@@ -1,2 +1,3 @@
 yarn add @mikro-orm/cli @mikro-orm/core @mikro-orm/migrations @mikro-orm/postgresql pg
 npx mikro-orm migration:create
+yarn add express apollo-server-express graphql type-graphql
