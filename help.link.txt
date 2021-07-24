@@ -1,0 +1,1 @@
+https://mikro-orm.io/docs/defining-entities

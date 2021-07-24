@@ -1,9 +1,10 @@
-import { Entity, PrimaryKey, Property} from '@mikro-orm/core';
+import {Entity, PrimaryKey, Property} from '@mikro-orm/core';
+
 
 @Entity()
 export class Post {
   @PrimaryKey()
-  id!: string;
+  id!: number;
 
   @Property()
   createdAt: Date = new Date();
@@ -13,4 +14,5 @@ export class Post {
 
   @Property()
   title!: string;
+
 }
