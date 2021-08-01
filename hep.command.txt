@@ -1,3 +1,15 @@
 yarn add @mikro-orm/cli @mikro-orm/core @mikro-orm/migrations @mikro-orm/postgresql pg
 npx mikro-orm migration:create
 yarn add express apollo-server-express graphql type-graphql
+
+redis connect-redis express-session
+@types/redis @types/connect-redis @types/express-session
+
+src/graphql/**/*.graphql
+
+
+
+
+http://localhost:4000/graphql
+
+@graphql-codegen/typescript-urql

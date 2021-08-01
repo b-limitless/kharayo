@@ -1,1 +1,2 @@
 https://mikro-orm.io/docs/defining-entities
+https://formidable.com/open-source/urql/docs/graphcache/
