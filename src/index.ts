@@ -14,7 +14,9 @@ import connectRedis from "connect-redis";
 import cors from 'cors';
 import { MyContext } from "./types";
 import { COOKIE_NAME } from "./constants";
+import { sendEmail } from "./utils/sendEmail";
 export const main = async () => {
+  sendEmail('bharatrose1@gmail.com', 'Hello Bharat');
   const orm = await MikroORM.init(mikroOrmConfig);
   await orm.getMigrator().up();
 
