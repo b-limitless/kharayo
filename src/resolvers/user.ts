@@ -2,7 +2,6 @@ import { MyContext } from "src/types";
 import {
   Resolver,
   Mutation,
-  InputType,
   Field,
   Arg,
   Ctx,
@@ -12,14 +11,8 @@ import {
 import { User } from "../entities/User";
 import argon2 from "argon2";
 import { COOKIE_NAME } from "../constants";
-
-@InputType()
-class UsernamePasswordInput {
-  @Field()
-  username: string;
-  @Field()
-  password: string;
-}
+import { UsernamePasswordInput } from "./UsernamePasswordInput";
+import { validateRegister } from "../utils/validateRegister";
 
 @ObjectType()
 class FieldError {
@@ -41,15 +34,18 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
-  @Query(() => User, {nullable: true})
-  async me(@Ctx() {req, em}: MyContext) {
-    if(!req.session.userId) {
+  @Mutation(() => Boolean)
+  async forgotPassword(@Arg("email") email: string, @Ctx() { em }: MyContext) {
+    return true;
+  }
+  @Query(() => User, { nullable: true })
+  async me(@Ctx() { req, em }: MyContext) {
+    if (!req.session.userId) {
       return null;
     }
-    const user = await em.findOne(User, {id:  req.session.userId})
-    
-    return user;
+    const user = await em.findOne(User, { id: req.session.userId });
 
+    return user;
   }
 
   @Mutation(() => UserResponse)
@@ -57,32 +53,14 @@ export class UserResolver {
     @Arg("options", () => UsernamePasswordInput) options: UsernamePasswordInput,
     @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
-    if (options.username.length <= 2) {
-      return {
-        errors: [
-          {
-            field: "username",
-            message: "length must be greater then 2 characters",
-          },
-        ],
-      };
+    const errors = validateRegister(options);
+    if(errors) {
+      return {errors};
     }
-
-    if (options.password.length <= 3) {
-      return {
-        errors: [
-          {
-            field: "password",
-            message: "length must be greater then 2 characters",
-          },
-        ],
-      };
-    }
-
-  
     const hashedPassword = await argon2.hash(options.password);
     const user = em.create(User, {
       username: options.username,
+      email: options.email,
       password: hashedPassword,
     });
     //let user;
@@ -95,17 +73,16 @@ export class UserResolver {
       // }).returning("*");
       // user = result[0];
       await em.persistAndFlush(user);
-    } catch(err){
-      if(err.code === "23505") {
+    } catch (err) {
+      if (err.code === "23505") {
         return {
           errors: [
             {
               field: "username",
-              message: "username already taken"
-            }
-          ]
-        }
-
+              message: "username already taken",
+            },
+          ],
+        };
       }
     }
     req.session!.userId = user.id;
@@ -114,21 +91,27 @@ export class UserResolver {
 
   @Mutation(() => UserResponse)
   async login(
-    @Arg("options", () => UsernamePasswordInput) options: UsernamePasswordInput,
+    @Arg("usernameOrEmail") usernameOrEmail: string,
+    @Arg("password") password: string,
     @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
-    const user = await em.findOne(User, { username: options.username });
+    const user = await em.findOne(
+      User,
+      usernameOrEmail.includes("@")
+        ? { email: usernameOrEmail }
+        : { username: usernameOrEmail }
+    );
     if (!user) {
       return {
         errors: [
           {
-            field: "username",
+            field: "usernameOrEmail",
             message: "Username does not exits",
           },
         ],
       };
     }
-    const validPassword = await argon2.verify(user.password, options.password);
+    const validPassword = await argon2.verify(user.password, password);
     if (!validPassword) {
       return {
         errors: [
@@ -146,18 +129,18 @@ export class UserResolver {
   }
 
   @Mutation(() => Boolean)
-  logout(
-    @Ctx() {req, res}: MyContext
-  ) {
-      return new Promise(resolve => req.session.destroy(err => {
+  logout(@Ctx() { req, res }: MyContext) {
+    return new Promise((resolve) =>
+      req.session.destroy((err) => {
         res.clearCookie(COOKIE_NAME);
-        if(err) {
+        if (err) {
           console.log(err);
           resolve(false);
           return;
         }
 
         resolve(true);
-      }))
+      })
+    );
   }
 }

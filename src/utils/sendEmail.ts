@@ -1,6 +1,6 @@
 "use strict";
 import nodemailer from "nodemailer";
-export async function sendEmail(to: string, text: string) { 
+export async function sendEmail(to: string, html: string) { 
   try {
     let transporter = nodemailer.createTransport({
         host: "smtp.ethereal.email",
@@ -16,7 +16,7 @@ export async function sendEmail(to: string, text: string) {
         from: '"Fred Foo 👻" <foo@example.com>',
         to: to,
         subject: "Hello ✔",
-        text,
+        html
       });
       console.log("Message sent: %s", info.messageId);
       console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
