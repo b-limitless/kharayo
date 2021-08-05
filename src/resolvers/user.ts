@@ -41,7 +41,7 @@ export class UserResolver {
   async changePassword(
     @Arg("newPassword") newPassword: string,
     @Arg("token") token: string,
-    @Ctx() {redis, em}: MyContext
+    @Ctx() {req, redis, em}: MyContext
   ): Promise<UserResponse> {
     if (newPassword.length <= 3) {
       return {errors: [
@@ -53,7 +53,8 @@ export class UserResolver {
     }};
 
     // Check if token is 
-    const userID = await redis.get(FORGET_PASSWORD_PREFIX+token);
+    const key = FORGET_PASSWORD_PREFIX+token;
+    const userID = await redis.get(key);
 
     if(!userID) {
       return {errors: [
@@ -81,6 +82,13 @@ export class UserResolver {
 
     user.password = await argon2.hash(newPassword);
     await em.persistAndFlush(user);
+
+    // Delete the key after reseting the password 
+    // Because it will not be useful 
+    redis.del(key);
+    // Log the user after chage password 
+    req.session.userId = user.id;
+
     return {
       user
     }
