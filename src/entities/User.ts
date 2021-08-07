@@ -1,33 +1,40 @@
-import {Entity, PrimaryKey, Property} from '@mikro-orm/core';
-import { Field, ObjectType } from 'type-graphql';
+import {
+  BaseEntity,
+  Entity,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Column,
+} from "typeorm";
+import { Field, ObjectType } from "type-graphql";
 
-// If you do not want to expose any coloum 
+// If you do not want to expose any coloum
 // Just remove @Filed() from specific column
 // thus: Api will have no access of it
 
 @ObjectType()
 @Entity()
-export class User {
+export class User extends BaseEntity {
   @Field()
-  @PrimaryKey()
+  @PrimaryGeneratedColumn()
   id!: number;
 
   @Field(() => String)
-  @Property({type: 'date'})
-  createdAt: Date = new Date();
+  @CreateDateColumn()
+  createdA = new Date();
 
   @Field(() => String)
-  @Property({type: 'date', onUpdate: () => new Date() })
-  updatedAt: Date = new Date();
+  @UpdateDateColumn()
+  updatedAt = new Date();
 
   @Field(() => String)
-  @Property({type: 'text', unique:true})
+  @Column({ unique: true })
   username!: string;
 
   @Field(() => String)
-  @Property({type: 'text', unique: true})
-  email!: string
+  @Column({ unique: true })
+  email!: string;
 
-  @Property({type: 'text'})
+  @Column({ type: "text" })
   password!: string;
 }
