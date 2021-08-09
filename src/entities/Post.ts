@@ -5,10 +5,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Column,
+  ManyToOne,
 } from "typeorm";
 
 import { Field, ObjectType } from "type-graphql";
-
+import { User } from "./User";
 // If you do not want to expose any coloum
 // Just remove @Filed() from specific column
 // thus: Api will have no access of it
@@ -31,4 +32,20 @@ export class Post extends BaseEntity {
   @Field(() => String)
   @Column()
   title!: string;
+
+  @Field()
+  @Column()
+  text!: string;
+
+  @Field()
+  @Column({type: "int", default: 0})
+  points!: number;
+
+  @Field()
+  @Column()
+  creatorId: number;
+
+  @ManyToOne(() => User, user => user.posts)
+  creator: User;
+
 }
